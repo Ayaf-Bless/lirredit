@@ -85,7 +85,7 @@ export class UserResolver {
   async login(
     @Arg("input", () => UsernamePasswordType)
     { password, username }: UsernamePasswordType,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username });
     if (!user) {
@@ -101,6 +101,8 @@ export class UserResolver {
         ],
       };
     }
+    req.session.user = user.id;
+    console.log(req.session.user);
     return {
       user,
     };

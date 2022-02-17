@@ -20,13 +20,24 @@ const main = async () => {
   const app = express();
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
+
+  await redisClient.on("error", (err) => {
+    console.log("Error ");
+  });
+  await redisClient.on("ready", () => {
+    console.log("✅ 💃 redis have ready !");
+  });
+
+  await redisClient.on("connect", () => {
+    console.log("✅ 💃 connect redis success !");
+  });
   app.use(
     cors({
       credentials: true,
       origin: "https://studio.apollographql.com",
     })
   );
-
+  app.set("trust proxy", 1);
   app.use(
     session({
       store: new RedisStore({ client: redisClient, disableTouch: true }),
@@ -48,7 +59,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ em: orm.em, req, res }),
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
   });
   await apolloSever.start();
   apolloSever.applyMiddleware({
